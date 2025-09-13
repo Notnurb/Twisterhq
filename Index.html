@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Twister</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Add to styles.css */
+    .hidden { display: none; }
+    .page { margin-top: 1em; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🌪️ Twister</h1>
+    <nav>
+      <button id="nav-feed">Feed</button>
+      <button id="nav-explore">Explore</button>
+      <button id="nav-synthara">Synthara</button>
+      <button id="nav-education">Education</button>
+      <button id="nav-profile">Profile</button>
+      <button id="nav-settings">Settings</button>
+      <button id="login">Login with GitHub</button>
+      <button id="logout" class="hidden">Logout</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="composer" class="hidden">
+      <textarea id="postContent" placeholder="What's happening?"></textarea>
+      <input type="file" id="fileUpload" accept="image/*,video/*">
+      <button id="postBtn">Post</button>
+    </section>
+
+    <section id="feed-page" class="page">
+      <h2>Feed</h2>
+      <div id="posts"></div>
+    </section>
+    <section id="explore-page" class="page hidden">
+      <h2>Explore</h2>
+      <div id="explore-content">Coming soon!</div>
+    </section>
+    <section id="synthara-page" class="page hidden">
+      <h2>Synthara</h2>
+      <div id="synthara-content">Coming soon!</div>
+    </section>
+    <section id="education-page" class="page hidden">
+      <h2>Education</h2>
+      <div id="education-content">Coming soon!</div>
+    </section>
+    <section id="profile-page" class="page hidden">
+      <h2>Profile</h2>
+      <div id="profile-content">Coming soon!</div>
+    </section>
+    <section id="settings-page" class="page hidden">
+      <h2>Settings</h2>
+      <div id="settings-content">Coming soon!</div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { signInWithGitHub, signOut, getUser, getPosts, createPost } from './supabase.js'
+
+    // Navigation logic
+    const pages = [
+      'feed-page',
+      'explore-page',
+      'synthara-page',
+      'education-page',
+      'profile-page',
+      'settings-page'
+    ]
+    function showPage(pageId) {
+      pages.forEach(id => {
+        document.getElementById(id).classList.toggle('hidden', id !== pageId)
+      })
+      // Only show composer on Feed
+      document.getElementById('composer').classList.toggle('hidden', pageId !== 'feed-page')
+    }
+    document.getElementById('nav-feed').onclick = () => showPage('feed-page')
+    document.getElementById('nav-explore').onclick = () => showPage('explore-page')
+    document.getElementById('nav-synthara').onclick = () => showPage('synthara-page')
+    document.getElementById('nav-education').onclick = () => showPage('education-page')
+    document.getElementById('nav-profile').onclick = () => showPage('profile-page')
+    document.getElementById('nav-settings').onclick = () => showPage('settings-page')
+
+    // Auth and post logic
+    const loginBtn = document.getElementById('login')
+    const logoutBtn = document.getElementById('logout')
+    const composer = document.getElementById('composer')
+    const postBtn = document.getElementById('postBtn')
+    const postsContainer = document.getElementById('posts')
+
+    loginBtn.onclick = async () => { await signInWithGitHub() }
+    logoutBtn.onclick = async () => { await signOut(); location.reload() }
+
+    async function loadUser() {
+      const user = await getUser()
+      if (user) {
+        loginBtn.classList.add('hidden')
+        logoutBtn.classList.remove('hidden')
+        composer.classList.remove('hidden')
+      }
+    }
+
+    async function loadFeed() {
+      const posts = await getPosts()
+      postsContainer.innerHTML = ""
+      posts.forEach(post => {
+        const div = document.createElement('div')
+        div.className = "post"
+        div.innerHTML = `
+          <p><strong>${post.user_id}</strong></p>
+          <p>${post.content}</p>
+          ${post.media && post.media.length > 0 ? `<img src="${post.media[0].url}" alt="media">` : ""}
+          <small>${new Date(post.created_at).toLocaleString()}</small>
+        `
+        postsContainer.appendChild(div)
+      })
+    }
+
+    postBtn.onclick = async () => {
+      const content = document.getElementById('postContent').value
+      const file = document.getElementById('fileUpload').files[0] || null
+      const user = await getUser()
+      if (user) {
+        await createPost(user.id, content, file)
+        document.getElementById('postContent').value = ""
+        document.getElementById('fileUpload').value = ""
+        await loadFeed()
+      }
+    }
+
+    // init
+    loadUser()
+    loadFeed()
+    showPage('feed-page')
+  </script>
+</body>
+</html>
