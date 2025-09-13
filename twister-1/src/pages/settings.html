@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../assets/styles/main.css">
+    <link rel="stylesheet" href="../assets/styles/components.css">
+    <title>Settings - Twister</title>
+</head>
+<body>
+    <header>
+        <h1>Settings</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Account Settings</h2>
+            <form id="account-settings-form">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+                
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+                
+                <button type="submit">Save Changes</button>
+            </form>
+        </section>
+        <section>
+            <h2>Privacy Settings</h2>
+            <form id="privacy-settings-form">
+                <label for="visibility">Profile Visibility:</label>
+                <select id="visibility" name="visibility">
+                    <option value="public">Public</option>
+                    <option value="private">Private</option>
+                </select>
+                
+                <button type="submit">Update Privacy</button>
+            </form>
+        </section>
+    </main>
+    <script src="../assets/scripts/main.js"></script>
+    <script src="../components/settings.js"></script>
+</body>
+</html>
